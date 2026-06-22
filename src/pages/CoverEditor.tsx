@@ -41,6 +41,7 @@ export default function CoverEditor() {
 
   useEffect(() => {
     if (!templateId) return;
+    user.load();
     const tpl = getTemplateById(templateId);
     if (!tpl) {
       navigate('/');
@@ -59,7 +60,6 @@ export default function CoverEditor() {
       s.setTemplate(templateId);
       setSaveName(tpl.name + ' · 我的版本');
     }
-    user.load();
     setTimeout(() => setInitDone(true), 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, vid]);

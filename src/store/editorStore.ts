@@ -66,10 +66,30 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const s = get();
     if (!s.layouts) return;
     const layouts = deepClone(s.layouts);
-    const cfg = layouts[s.currentAspect];
-    const idx = cfg.texts.findIndex((t) => t.id === textId);
-    if (idx >= 0) {
-      cfg.texts[idx] = { ...cfg.texts[idx], ...patch };
+    const aspects = Object.keys(layouts) as AspectRatio[];
+    let updated = false;
+    aspects.forEach((asp) => {
+      const cfg = layouts[asp];
+      const idx = cfg.texts.findIndex((t) => t.id === textId);
+      if (idx >= 0) {
+        const layoutSpecificKeys = ['x', 'y', 'maxWidth', 'textAlign', 'fontSize', 'lineHeight'];
+        const contentPatch: Partial<TextConfig> = {};
+        for (const key of Object.keys(patch)) {
+          if (!layoutSpecificKeys.includes(key)) {
+            (contentPatch as any)[key] = (patch as any)[key];
+          } else if (asp === s.currentAspect) {
+            (contentPatch as any)[key] = (patch as any)[key];
+          }
+        }
+        if (asp === s.currentAspect) {
+          cfg.texts[idx] = { ...cfg.texts[idx], ...patch };
+        } else if (Object.keys(contentPatch).length > 0) {
+          cfg.texts[idx] = { ...cfg.texts[idx], ...contentPatch };
+        }
+        updated = true;
+      }
+    });
+    if (updated) {
       const history = s.history.slice(0, s.historyIndex + 1);
       history.push(layouts);
       set({ layouts, history, historyIndex: history.length - 1 });
@@ -80,10 +100,30 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const s = get();
     if (!s.layouts) return;
     const layouts = deepClone(s.layouts);
-    const cfg = layouts[s.currentAspect];
-    const idx = cfg.images.findIndex((i) => i.id === imageId);
-    if (idx >= 0) {
-      cfg.images[idx] = { ...cfg.images[idx], ...patch };
+    const aspects = Object.keys(layouts) as AspectRatio[];
+    let updated = false;
+    aspects.forEach((asp) => {
+      const cfg = layouts[asp];
+      const idx = cfg.images.findIndex((i) => i.id === imageId);
+      if (idx >= 0) {
+        const layoutSpecificKeys = ['x', 'y', 'width', 'height'];
+        const contentPatch: Partial<ImageConfig> = {};
+        for (const key of Object.keys(patch)) {
+          if (!layoutSpecificKeys.includes(key)) {
+            (contentPatch as any)[key] = (patch as any)[key];
+          } else if (asp === s.currentAspect) {
+            (contentPatch as any)[key] = (patch as any)[key];
+          }
+        }
+        if (asp === s.currentAspect) {
+          cfg.images[idx] = { ...cfg.images[idx], ...patch };
+        } else if (Object.keys(contentPatch).length > 0) {
+          cfg.images[idx] = { ...cfg.images[idx], ...contentPatch };
+        }
+        updated = true;
+      }
+    });
+    if (updated) {
       const history = s.history.slice(0, s.historyIndex + 1);
       history.push(layouts);
       set({ layouts, history, historyIndex: history.length - 1 });
